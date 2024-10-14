@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Quality Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .metric-description {
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px;
+        }
+        #back-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        #back-button:hover {
+            background-color: #2980b9;
+        }
+        .info-line {
+            margin-top: 20px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <h1>Code Quality Metrics</h1>
+    <p>Username: {{ username }}</p>
+    <p class="info-line">The following code quality metrics are calculated excluding the Forked Repositories according to set heuristics i.e. 8 core code files picked randomly.</p>
+    <h2>Code Quality Averages</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Description</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Average Error Count</td>
+                <td class="metric-description">The average number of errors detected in the codebase. Errors are typically critical issues that need to be resolved to ensure the application functions correctly.</td>
+                <td>{{ metrics.average_error_count }}</td>
+            </tr>
+            <tr>
+                <td>Average Warning Count</td>
+                <td class="metric-description">The average number of warnings detected. Warnings are less severe than errors but should still be addressed to improve code quality and maintainability.</td>
+                <td>{{ metrics.average_warning_count }}</td>
+            </tr>
+            <tr>
+                <td>Average Cyclomatic Complexity</td>
+                <td class="metric-description">Cyclomatic complexity measures the complexity of the code by counting the number of linearly independent paths through the code. Lower values indicate simpler, more maintainable code, while higher values suggest more complex, potentially harder-to-maintain code. Good practice suggests keeping it below 10.</td>
+                <td>{{ metrics.average_cyclomatic_complexity }}</td>
+            </tr>
+            <tr>
+                <td>Average Code Smells</td>
+                <td class="metric-description">The average number of code smells in the codebase. Code smells are patterns in code that indicate potential problems or areas for improvement. A high number of code smells can suggest poor code quality or maintainability issues.</td>
+                <td>{{ metrics.average_code_smells }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button id="back-button">Back to Homepage</button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const backButton = document.getElementById('back-button');
+            
+            backButton.addEventListener('click', function() {
+                window.location.href = '/'; // Redirect to homepage
+            });
+
+            // Redirect to homepage on refresh
+            window.addEventListener('beforeunload', function() {
+                window.location.href = '/'; // Redirect to homepage
+            });
+        });
+    </script>
+</body>
+</html>

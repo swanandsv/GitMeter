@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+    
+        h1, h2 {
+            color: #2c3e50;
+        }
+    
+        h2 {
+            margin-top: 20px;
+        }
+    
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+    
+        ul li {
+            padding: 5px 0;
+            color: #555;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+    
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+    
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    
+        th {
+            background-color: #f4f4f4;
+        }
+    
+        .star-rating {
+            font-size: 20px;
+            color: gold;
+        }
+    
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+    
+        .grid-item {
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    
+        #status-button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    
+        #status-button.green {
+            background-color: #2ecc71;
+        }
+    
+        #status-button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+    
+        .info-line {
+            margin-top: 20px;
+            color: #7f8c8d;
+        }
+    
+        .chart-wrapper {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+    
+        .chart-container {
+            
+            width: 100%;
+            
+        }
+    
+        canvas {
+            
+            width: auto;
+            height: auto;         
+        }
+    
+        .tech-grid, .extra-tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+    
+        .tech-item {
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            color: white;
+        }
+    
+        .used {
+            background-color: #28a745; /* Green for used */
+        }
+    
+        .not-used {
+            background-color: #dc3545; /* Red for not used */
+        }
+    
+        .extra-used {
+            background-color: #f1c40f; /* Yellow for extra used */
+        }
+    
+        .extra-tech-info, .tech-grid-info {
+            margin: 20px 0;
+        }
+
+	.home-button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .home-button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Non-Code Quality Metrics</h1>
+    <p>Username: {{ username }}</p>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <div class="chart-wrapper">
+        <div class="chart-container">
+            <h2>Technology Usage</h2>
+            <ul>
+                {% for lang, percentage in metrics.languages.items %}
+                    <li>{{ lang }}: {{ percentage|floatformat:2 }}%</li>
+                {% endfor %}
+            </ul>
+        </div>
+    
+        <div class="chart-container">
+            <h2>Technology Usage Pie Chart</h2>
+            <canvas id="tech-pie-chart"></canvas> <!-- This is the canvas where the chart will be rendered -->
+        </div>
+    </div>
+    
+    <div class="grid-container">
+        <div class="grid-item">
+            <h2>Extra Technologies comparing with GPT-3.5 Parsing</h2>
+            <div class="extra-tech-grid">
+                {% for tech in extra_technologies %}
+                    <div class="tech-item extra-used">
+                        {{ tech }}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="extra-tech-info">
+                <p>Extra technologies are those that are present in GitHub projects but were not parsed by GPT-3.5 in the resume.</p>
+            </div>
+        </div>
+
+        <div class="grid-item">
+            <h2>Technology Comparison (GPT-3.5 Parsing)</h2>
+            <div class="tech-grid">
+                {% for tech in technologies %}
+                    <div class="tech-item {% if tech in metrics.languages %}used{% elif tech in extra_technologies %}extra-used{% else %}not-used{% endif %}">
+                        {{ tech }}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="tech-grid-info">
+                <p>Technologies parsed by GPT from the resume that are also part of GitHub projects are shown in green. This does not indicate candidates' non-proficiency in technologies marked in red. We only use public GitHub repositories of users.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <div class="grid-item">
+            <h2>Extra Technologies Comparing with Rchilli Resume Parser</h2>
+            <div class="extra-tech-grid">
+                {% for skill in extra_skills %}
+                    <div class="tech-item extra-used">
+                        {{ skill }}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="extra-tech-info">
+                <p>Extra technologies are those that are present in GitHub projects but are not parsed by the Rchilli Resume Parser.</p>
+            </div>
+        </div>
+
+        <div class="grid-item">
+            <h2>Technology Comparison (Rchilli Resume Parser)</h2>
+            <div class="tech-grid">
+                {% for skill in parsed_skills %}
+                    <div class="tech-item {% if skill in metrics.languages %}used{% elif skill in extra_technologies %}extra-used{% else %}not-used{% endif %}">
+                        {{ skill }}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="tech-grid-info">
+                <p>Skills Parsed by Rchilli Resume Parser that are also part of GitHub projects are shown in green. This does not indicate candidates' non-proficiency in skills marked in red as we only use public GitHub repositories of users.</p>
+            </div>
+        </div>
+    </div>
+
+
+
+    <h2>Repository Metrics</h2>
+    <div class="grid-container">
+        <div class="grid-item">
+            <h3>Activity</h3>
+            <p>Commits per Day: {{ metrics.activity.commits_per_day }}</p>
+            <p>Days Active: {{ metrics.activity.days_active }}</p>
+        </div>
+        <div class="grid-item">
+            <h3>Forks</h3>
+            <p>Total Forks: {{ metrics.aggregate_metrics.forks }}</p>
+        </div>
+        <div class="grid-item">
+            <h3>Watchers</h3>
+            <p>Total Watchers: {{ metrics.aggregate_metrics.watchers }}</p>
+        </div>
+        <div class="grid-item">
+            <h3>Stars</h3>
+            <p>Total Stars: {{ metrics.aggregate_metrics.stars }}</p>
+        </div>
+        <div class="grid-item">
+            <h3>Badges</h3>
+            <p>Total Badges: {{ metrics.aggregate_metrics.badges }}</p>
+        </div>
+        <div class="grid-item">
+            <h3>Open Source Contributions</h3>
+            <p>Pull Requests: {{ metrics.pull_requests }}</p>
+        </div>
+        <div class="grid-item">
+            <h3>Total Repositories</h3>
+            <p>Total: {{ metrics.total_repos }}</p>
+        </div>
+        <div class="grid-item">
+            <h3>Total Forked Repositories From Other Source</h3>
+            <p>Total: {{ metrics.forks_from_other_repos}}</p>
+        </div>
+
+        <div class="grid-item">
+            <h3>Soft Skills Based on GitHub Projects</h3>
+            
+            {% if metrics.soft_skills.familiarity_with_open_source %}
+                <p>Familiarity with Open Source: Yes</p>
+            {% endif %}
+            
+            {% if metrics.soft_skills.commitment_to_projects %}
+                <p>Commitment to Projects: Yes</p>
+            {% endif %}
+            
+            {% if metrics.soft_skills.fast_learner %}
+                <p>Fast Learner (Uses Multiple Languages): Yes</p>
+            {% endif %}
+            
+            {% if metrics.soft_skills.ownership_of_projects %}
+                <p>Ownership of Projects: Yes</p>
+            {% endif %}
+            
+            {% if metrics.soft_skills.teamwork %}
+                <p>Teamwork: Yes</p>
+            {% endif %}
+            
+            <!-- Add a note about research papers -->
+            <h4>These soft skills are calculated based on the results from the following research papers:</h4>
+            <ul>
+                <li>
+                    <a href="https://dl.acm.org/doi/pdf/10.1145/3510455.3512772" target="_blank">
+                        Towards Mining OSS Skills from GitHub Activity
+                    </a>
+                </li>
+                <li>
+                    <a href="https://dl.acm.org/doi/pdf/10.1145/2441776.2441794?casa_token=d1z-9ddO_lYAAAAA:LecepghwerEYRwh48nyloe9bET-p-GimHVlGaYINoPTqDpNUS76SOSbExtNy2eeVZw_-b6MRRFI" target="_blank">
+                        Activity Traces and Signals in Software Developer Recruitment and Hiring
+                    </a>
+                </li>
+                <li>
+                    <a href="https://dl.acm.org/doi/pdf/10.1145/2441776.2441791?casa_token=yTAS9-XgBCAAAAAA:FRwuyfJ225qdh60hUrlofYkwsFzgScY4fiWUqlrLCRRNwo3m-h5TcUVKcgGLgMCXtzPi85snt6k" target="_blank">
+                        Mutual Assessment in the Social Programmer Ecosystem: An Empirical Investigation of Developer Profile Aggregators
+                    </a>
+                </li>
+                <li>
+                    <a href="https://dl.acm.org/doi/pdf/10.1145/2145204.2145396?casa_token=EzMdvU-WNsYAAAAA:ssXubYUxvQMgy8Wz3vXkzw4dlRFI5Oaf4inHajD3wXrxSFYIanCtOxYZi0bxDy3xfPc77JQlgRk" target="_blank">
+                        Social Coding in GitHub: Transparency and Collaboration in an Open Software Repository
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+    <div class="grid-item">
+        <h3>Soft Skills Based on RChilli</h3>
+        
+        {% if soft_skills %}
+            {% for skill in soft_skills %}
+                <p>{{ skill }}</p>
+            {% endfor %}
+        {% else %}
+            <p>No Soft Skill Present</p>
+        {% endif %}
+    </div>
+</div>
+    <div class="chart-wrapper">
+        <div class="chart-container">
+            <h2>Project Types</h2>
+            <canvas id="project-type-bar-chart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>Documentation and Project Structure</h2>
+            <canvas id="doc-structure-bar-chart"></canvas>
+        </div>
+    </div>
+
+
+
+    <p class="info-line">The button below will turn green once code quality results are available. Click the button to view the code quality results.</p>
+    <button id="status-button" disabled>Loading...</button>
+
+
+    <!-- Button to go back to the homepage -->
+    <button class="home-button" onclick="window.location.href='/'">Go to Homepage</button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Pie chart for Technology Usage
+            const techPieCtx = document.getElementById('tech-pie-chart').getContext('2d');
+            new Chart(techPieCtx, {
+                type: 'pie',
+                data: {
+                    labels: [{% for lang in metrics.languages.keys %} '{{ lang }}', {% endfor %}],
+                    datasets: [{
+                        data: [{% for percentage in metrics.languages.values %} {{ percentage|floatformat:2 }}, {% endfor %}],
+                        backgroundColor: ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#34495e', '#95a5a6']
+                    }]
+                }
+            });
+
+            // Bar chart for Project Types
+            const projectTypeCtx = document.getElementById('project-type-bar-chart').getContext('2d');
+            new Chart(projectTypeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['ML-Based', 'Web-Based', 'CI/CD-Based', 'Miscellaneous'],
+                    datasets: [{
+                        label: 'Project Types',
+                        data: [
+                            {{ project_types.ml_based }},
+                            {{ project_types.web_based }},
+                            {{ project_types.ci_cd_based }},
+                            {{ project_types.miscellaneous }}
+                        ],
+                        backgroundColor: ['#4caf50', '#2196f3', '#ff9800', '#9e9e9e']
+                    }]
+                }
+            });
+
+            // Bar chart for Documentation and Project Structure
+            const docStructureCtx = document.getElementById('doc-structure-bar-chart').getContext('2d');
+            new Chart(docStructureCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Documented Repositories', 'Undocumented Repositories', 'Repositories with Tests', 'Repositories without tests'],
+                    datasets: [{
+                        label: 'Repository Status',
+                        data: [
+                            {{ metrics.documented_repos }},
+                            {{ metrics.undocumented_repos }},
+                            {{ metrics.structured_repos }},
+                            {{ metrics.unstructured_repos }}
+                        ],
+                        backgroundColor: ['#4caf50', '#f44336', '#2196f3', '#ff9800']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            function checkStatus() {
+        fetch(`/check_code_quality_status?username={{ username }}`)
+            .then(response => response.json())
+            .then(data => {
+                const button = document.getElementById('status-button');
+                if (data.status === 'completed') {
+                    button.innerText = 'View Code Quality Results';
+                    button.disabled = false;
+                    button.classList.add('green');
+                    button.onclick = function() {
+                        window.location.href = `/code_quality_results?username={{ username }}`;
+                    };
+                } else {
+                    setTimeout(checkStatus, 2000); // Poll every 2 seconds
+                }
+            });
+    }
+    checkStatus();
+        });
+    </script>
+</body>
+</html>
