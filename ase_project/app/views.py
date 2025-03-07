@@ -20,7 +20,7 @@ import concurrent.futures
 #code_quality_status = {}
 
 base_url = "https://api.github.com"
-access_token = "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"
+access_token = "Enter your access token here"
 headers = {"Authorization": f"Bearer {access_token}"}
 
 # Create a global lock
